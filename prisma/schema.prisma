@@ -1,0 +1,100 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// enum Role {
+//   OWNER
+//   SUPERADMIN
+//   COMPANYADMIN
+//   MANAGER
+//   USER
+// }
+
+// enum OfficeType {
+//   Office_Park
+//   Downtown_Office
+//   Skyline
+// }
+
+model User {
+  id             String          @id @default(uuid())
+  firstName      String
+  lastName       String
+  displayName    String
+  email          String          @unique
+  role           String          @default("USER")
+  password       Password?
+  forgotPassword ForgotPassword?
+  resetPassword  ResetPassword[]
+  business       Business        @relation(fields: [businessId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  businessId     String
+  message        Message[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Password {
+  id        String   @id @default(uuid())
+  password  String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ForgotPassword {
+  id                     String   @id @default(uuid())
+  forgotPasswordQuestion String
+  forgotPasswordAnswer   String
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId                 String   @unique
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model ResetPassword {
+  id                   String   @id @default(uuid())
+  resetPasswordToken   String   @unique
+  resetPasswordExpired DateTime @default(now())
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId               String
+}
+
+model Business {
+  id         String    @id @default(uuid())
+  code       String    @unique
+  name       String    @unique
+  officeType String    @default("Office_Park")
+  user       User[]
+  room       Room[]
+  message    Message[]
+}
+
+model Room {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String
+  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  businessId  String
+  Message     Message[]
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  messageBody String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId      String
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  roomId      String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  businessId  String
+  timeStamp   DateTime @updatedAt
+}
