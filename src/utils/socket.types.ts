@@ -14,6 +14,14 @@ export interface ServerToClientEvents {
     id: string,
     timestamp: Date
   ) => void;
+  created: () => void;
+  joined: () => void;
+  full: () => void;
+  ready: () => void;
+  iceCandidate: (candidate: any) => void;
+  offer: (offer: any) => void;
+  answer: (answer: any) => void;
+  leave: () => void;
 }
 
 export interface ClientToServerEvents {
@@ -26,6 +34,12 @@ export interface ClientToServerEvents {
   ) => void;
   startType: (displayName: string, roomId: string) => void;
   stopType: (displayName: string) => void;
+  join: (roomName: string) => void;
+  ready: (roomName: string) => void;
+  iceCandidate: (candidate: any, roomName: string) => void;
+  offer: (offer: any, roomName: string) => void;
+  answer: (answer: any, roomName: string) => void;
+  leave: (roomName: string) => void;
 }
 
 export interface InterServerEvents {

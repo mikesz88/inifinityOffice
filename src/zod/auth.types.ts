@@ -5,7 +5,7 @@ const passwordRegex =
 
 export enum Role {
   OWNER = 'OWNER',
-  SUPERADMIN = 'SUPERADMIN',
+  // SUPERADMIN = 'SUPERADMIN',
   COMPANYADMIN = 'COMPANYADMIN',
   MANAGER = 'MANAGER',
   USER = 'USER',
@@ -35,9 +35,7 @@ export const registerUserZObject = z
     lastName: z.string(),
     displayName: z.string().optional(),
     email: z.string().email(),
-    role: z
-      .enum(['OWNER', 'SUPERADMIN', 'COMPANYADMIN', 'MANAGER', 'USER'])
-      .optional(),
+    role: z.enum(['OWNER', 'COMPANYADMIN', 'MANAGER', 'USER']).optional(),
     businessCode: z.string().length(6),
     password: z
       .string()

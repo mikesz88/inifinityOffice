@@ -10,6 +10,33 @@ import {
 } from '../utils/auth';
 import crypto from 'crypto';
 
+const privateOfficeTypes = [
+  {
+    role: 'USER',
+    name: 'User Office',
+    description: 'Max 4',
+    capacity: 4,
+  },
+  {
+    role: 'MANAGER',
+    name: 'Manager Office',
+    description: 'Max 6',
+    capacity: 6,
+  },
+  {
+    role: 'COMPANYADMIN',
+    name: 'Admin Office',
+    description: 'Max 8',
+    capacity: 8,
+  },
+  {
+    role: 'OWNER',
+    name: 'Owner Office',
+    description: 'Max 10',
+    capacity: 10,
+  },
+];
+
 // * @desc Register User
 // * @route POST /api/v1/auth/register
 // * @access PUBLIC
@@ -67,6 +94,20 @@ exports.registerUser = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 
+  for (const officeType of privateOfficeTypes) {
+    if (user.role === officeType.role) {
+      await db.room.create({
+        data: {
+          name: officeType.name,
+          description: officeType.description,
+          businessId: user.businessId,
+          userId: user.id,
+          capacity: officeType.capacity,
+        },
+      });
+    }
+  }
+
   sendTokenResponse(user.id, 201, res);
 });
 
@@ -87,6 +128,10 @@ exports.login = asyncHandler(
     const user = await db.user.findUnique({
       where: {
         email,
+      },
+      select: {
+        id: true,
+        email: true,
       },
     });
 
@@ -342,6 +387,12 @@ exports.forgotAnswer = asyncHandler(
     }
 
     const { resetPasswordToken, resetToken } = getResetPasswordToken();
+
+    await db.resetPassword.deleteMany({
+      where: {
+        userId: user.id,
+      },
+    });
 
     await db.resetPassword.create({
       data: {

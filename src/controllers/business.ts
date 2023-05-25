@@ -145,7 +145,7 @@ exports.allBusinesses = asyncHandler(
 exports.getBusiness = asyncHandler(
   async (req: Request, res: Response, _next: NextFunction) => {
     const business = await db.business.findUnique({
-      where: { id: req.user!.businessId },
+      where: { id: req.user!.businessId! },
     });
 
     res.status(200).json({ success: true, data: business });

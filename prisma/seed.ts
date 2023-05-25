@@ -1,3 +1,4 @@
+import { Business, User } from '@prisma/client';
 import { saltValue } from '../src/utils/auth';
 import db from './db.setup';
 
@@ -142,9 +143,9 @@ const seed = async () => {
           forgotPasswordAnswer: await saltValue('blue'),
         },
       },
-      business: {
-        connect: { id: business1.id },
-      },
+      // business: {
+      //   connect: { id: business1.id },
+      // },
     },
   });
 
@@ -168,9 +169,9 @@ const seed = async () => {
           forgotPasswordAnswer: await saltValue('blue'),
         },
       },
-      business: {
-        connect: { id: business2.id },
-      },
+      // business: {
+      //   connect: { id: business2.id },
+      // },
     },
   });
 
@@ -194,9 +195,9 @@ const seed = async () => {
           forgotPasswordAnswer: await saltValue('blue'),
         },
       },
-      business: {
-        connect: { id: business3.id },
-      },
+      // business: {
+      //   connect: { id: business3.id },
+      // },
     },
   });
 
@@ -434,51 +435,271 @@ const seed = async () => {
     },
   });
 
-  const roomTest = await db.room.create({
-    data: {
-      name: 'test',
-      description: 'this is a test',
+  const business1Users = await db.user.findMany({
+    where: {
       businessId: business1.id,
     },
   });
 
-  const messageTest = await db.message.create({
-    data: {
-      messageBody: 'I am testing this message',
-      userId: michael1.id,
-      roomId: roomTest.id,
-      businessId: business1.id,
+  const business2Users = await db.user.findMany({
+    where: {
+      businessId: business2.id,
     },
   });
 
-  console.log({
-    business1: {
-      business1,
-      michael1,
-      lisa1,
-      lily1,
-      mila1,
-      remi1,
+  const business3Users = await db.user.findMany({
+    where: {
+      businessId: business3.id,
     },
-    business2: {
-      business2,
-      michael2,
-      lisa2,
-      lily2,
-      mila2,
-      remi2,
-    },
-    business3: {
-      business3,
-      michael3,
-      lisa3,
-      lily3,
-      mila3,
-      remi3,
-    },
-    roomTest,
-    messageTest,
   });
+
+  const officePark = [
+    {
+      name: 'Conference Room 1',
+      description: 'Max 50 users',
+      capacity: 50,
+    },
+    {
+      name: 'Conference Room 2',
+      description: 'Max 50 users',
+      capacity: 50,
+    },
+    {
+      name: 'Break Room',
+      description: 'Max 20 users',
+      capacity: 20,
+    },
+  ];
+
+  const downtownOffice = [
+    {
+      name: 'Conference Room 1',
+      description: 'Max 100 users',
+      capacity: 100,
+    },
+    {
+      name: 'Conference Room 2',
+      description: 'Max 100 users',
+      capacity: 100,
+    },
+    {
+      name: 'Conference Room 3',
+      description: 'Max 100 users',
+      capacity: 100,
+    },
+    {
+      name: 'Conference Room 4',
+      description: 'Max 100 users',
+      capacity: 100,
+    },
+    {
+      name: 'Conference Room 5',
+      description: 'Max 100 users',
+      capacity: 100,
+    },
+    {
+      name: 'Break Room 1',
+      description: 'Max 20 users',
+      capacity: 20,
+    },
+    {
+      name: 'Break Room 2',
+      description: 'Max 20 users',
+      capacity: 20,
+    },
+  ];
+
+  const skyline = [
+    {
+      name: 'Conference Room 1',
+      description: 'Max 100 users',
+      capacity: 100,
+    },
+    {
+      name: 'Conference Room 2',
+      description: 'Max 100 users',
+      capacity: 100,
+    },
+    {
+      name: 'Conference Room 3',
+      description: 'Max 100 users',
+      capacity: 100,
+    },
+    {
+      name: 'Conference Room 4',
+      description: 'Max 100 users',
+      capacity: 100,
+    },
+    {
+      name: 'Conference Room 5',
+      description: 'Max 100 users',
+      capacity: 100,
+    },
+    {
+      name: 'Conference Room 6',
+      description: 'Max 100 users',
+      capacity: 100,
+    },
+    {
+      name: 'Conference Room 7',
+      description: 'Max 100 users',
+      capacity: 100,
+    },
+    {
+      name: 'Conference Room 8',
+      description: 'Max 100 users',
+      capacity: 100,
+    },
+    {
+      name: 'Conference Room 9',
+      description: 'Max 100 users',
+      capacity: 100,
+    },
+    {
+      name: 'Conference Room 10',
+      description: 'Max 100 users',
+      capacity: 100,
+    },
+    {
+      name: 'Break Room 1',
+      description: 'Max 20 users',
+      capacity: 20,
+    },
+    {
+      name: 'Break Room 2',
+      description: 'Max 20 users',
+      capacity: 20,
+    },
+    {
+      name: 'Break Room 3',
+      description: 'Max 20 users',
+      capacity: 20,
+    },
+    {
+      name: 'Auditorium',
+      description: 'Max 250 users',
+      capacity: 250,
+    },
+    {
+      name: 'Cafeteria',
+      description: 'Max 100 users',
+      capacity: 100,
+    },
+  ];
+
+  const createRoomsList = async (
+    business: Business,
+    offices: 'Office_Park' | 'Downtown_Office' | 'Skyline',
+    users: User[]
+  ) => {
+    for (let count = 0; count < users.length; count++) {
+      const user = users[count];
+      if (user.role === 'USER') {
+        await db.room.create({
+          data: {
+            name: 'User Office',
+            description: 'Max 4',
+            businessId: user.businessId,
+            userId: user.id,
+            capacity: 4,
+          },
+        });
+      } else if (user.role === 'MANAGER') {
+        await db.room.create({
+          data: {
+            name: 'Manager Office',
+            description: 'Max 6',
+            businessId: user.businessId!,
+            userId: user.id,
+            capacity: 6,
+          },
+        });
+      } else if (user.role === 'COMPANYADMIN') {
+        await db.room.create({
+          data: {
+            name: 'Admin Office',
+            description: 'Max 8',
+            businessId: user.businessId!,
+            userId: user.id,
+            capacity: 8,
+          },
+        });
+      } else if (user.role === 'OWNER') {
+        await db.room.create({
+          data: {
+            name: 'Owner Office',
+            description: 'Max 10',
+            businessId: user.businessId!,
+            userId: user.id,
+            capacity: 10,
+          },
+        });
+      }
+    }
+
+    if (offices === 'Office_Park') {
+      officePark.map(
+        async (room) =>
+          await db.room.create({
+            data: {
+              name: room.name,
+              description: room.description,
+              businessId: business.id,
+              capacity: room.capacity,
+            },
+          })
+      );
+    }
+
+    if (offices === 'Downtown_Office') {
+      downtownOffice.map(
+        async (room) =>
+          await db.room.create({
+            data: {
+              name: room.name,
+              description: room.description,
+              businessId: business.id,
+              capacity: room.capacity,
+            },
+          })
+      );
+    }
+
+    if (offices === 'Skyline') {
+      skyline.map(
+        async (room) =>
+          await db.room.create({
+            data: {
+              name: room.name,
+              description: room.description,
+              businessId: business.id,
+              capacity: room.capacity,
+            },
+          })
+      );
+    }
+  };
+
+  const superAdmins = await db.user.findMany({
+    where: {
+      role: 'SUPERADMIN',
+    },
+  });
+
+  for (const superAdmin of superAdmins) {
+    await db.room.create({
+      data: {
+        name: 'SuperAdmin Office',
+        description: 'Max 10',
+        userId: superAdmin.id,
+        capacity: 10,
+      },
+    });
+  }
+
+  createRoomsList(business1, 'Office_Park', business1Users);
+  createRoomsList(business2, 'Downtown_Office', business2Users);
+  createRoomsList(business3, 'Skyline', business3Users);
 };
 
 seed()

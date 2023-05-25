@@ -13,7 +13,7 @@ exports.businessOwner = asyncHandler(
     } else if (req.user!.role === 'OWNER') {
       const business = (await db.business.findUnique({
         where: {
-          id: req.user!.businessId,
+          id: req.user!.businessId!,
         },
       })) as Business;
       req.business = business;
