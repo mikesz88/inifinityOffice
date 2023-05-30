@@ -26,61 +26,74 @@ let typingUsers: { [T: string]: string } = {};
 
 // Socket IO
 io.on('connection', function (client) {
-  console.log('New user connected');
-  //Listens for a new chat message
-  client.on('newRoom', async (name, description, businessId) => {
-    // Create/Save channel in db
-    const newRoom = await db.room.create({
-      data: {
-        name,
-        description,
-        businessId,
-        capacity: 25,
-      },
-    });
-    //Send message to those connected in the room
-    io.emit('roomCreated', newRoom.name, newRoom.description, newRoom.id);
+  console.log(`User Connected: ${client.id}`);
+
+  // Triggered when a peer hits the join room button.
+  client.on('join', (roomName) => {
+    const { rooms } = socketApi.io.sockets.adapter;
+    const room = rooms.get(roomName);
+    console.log({ roomName });
+
+    // room == undefined when no such room exists.
+    if (room === undefined) {
+      client.join(roomName);
+      client.emit('created');
+      console.log('created');
+    } else if (room.size === 1) {
+      // room.size == 1 when one person is inside the room.
+      client.join(roomName);
+      client.emit('joined');
+      console.log('joined');
+    } else {
+      // when there are already two people inside the room.
+      client.emit('full');
+    }
+    console.log({ rooms });
   });
 
-  //Listens for user typing.
-  client.on('startType', function (displayName, roomId) {
-    console.log('User ' + displayName + ' is writing a message...');
-    typingUsers[displayName] = roomId;
-    io.emit('userTypingUpdate', typingUsers, roomId);
+  // Triggered when the person who joined the room is ready to communicate.
+  client.on('ready', (roomName) => {
+    console.log({ roomName });
+    client.broadcast.to(roomName).emit('ready'); // Informs the other peer in the room.
   });
 
-  client.on('stopType', function (userName) {
-    console.log('User ' + userName + ' has stopped writing a message...');
-    delete typingUsers[userName];
-    io.emit('userTypingUpdate', typingUsers);
+  // Triggered when server gets an icecandidate from a peer in the room.
+  client.on('iceCandidate', (candidate, roomName) => {
+    console.log({ candidate });
+    client.broadcast.to(roomName).emit('iceCandidate', candidate); // Sends Candidate to the other peer in the room.
   });
 
-  //Listens for a new chat message
-  client.on('newMessage', async (messageBody, userId, roomId, businessId) => {
-    //Create message
-    console.log(messageBody);
+  // Triggered when server gets an offer from a peer in the room.
+  client.on('offer', (offer, roomName) => {
+    console.log({ offer });
+    client.broadcast.to(roomName).emit('offer', offer); // Sends Offer to the other peer in the room.
+  });
 
-    // Create/Save message in db
+  // Triggered when server gets an answer from a peer in the room
+  client.on('answer', (answer, roomName) => {
+    console.log({ answer });
+    client.broadcast.to(roomName).emit('answer', answer); // Sends Answer to the other peer in the room.
+  });
+
+  client.on('leave', (roomName) => {
+    client.leave(roomName);
+    client.broadcast.to(roomName).emit('leave');
+  });
+
+  client.on('chatMessage', async (messageBody, roomId, userId, businessId) => {
+    console.log({ messageBody, roomId, userId, businessId });
     const newMessage = await db.message.create({
       data: {
         messageBody,
-        userId,
         roomId,
+        userId,
         businessId,
       },
     });
+    // const roomName = Array.from(client.rooms);
+    console.log({ newMessage });
 
-    //Send message to those connected in the room
-    console.log('new message sent');
-
-    io.emit(
-      'messageCreated',
-      newMessage.messageBody,
-      newMessage.userId,
-      newMessage.businessId,
-      newMessage.id,
-      newMessage.timeStamp
-    );
+    io.to(roomId).emit('chatMessage', messageBody, roomId, userId, businessId);
   });
 });
 

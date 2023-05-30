@@ -22,6 +22,12 @@ export interface ServerToClientEvents {
   offer: (offer: any) => void;
   answer: (answer: any) => void;
   leave: () => void;
+  chatMessage: (
+    messageBody: string,
+    roomId: string,
+    userId: string,
+    businessId: string
+  ) => void;
 }
 
 export interface ClientToServerEvents {
@@ -40,6 +46,12 @@ export interface ClientToServerEvents {
   offer: (offer: any, roomName: string) => void;
   answer: (answer: any, roomName: string) => void;
   leave: (roomName: string) => void;
+  chatMessage: (
+    messageBody: string,
+    roomId: string,
+    userId: string,
+    businessId: string
+  ) => void;
 }
 
 export interface InterServerEvents {

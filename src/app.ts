@@ -49,6 +49,7 @@ app.use(limiter);
 const auth = require('./routes/auth');
 const business = require('./routes/business');
 const socket = require('./routes/socket');
+const channel = require('./routes/channel');
 
 // display routes in console
 if (process.env.NODE_ENV === 'development') {
@@ -59,6 +60,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/business', business);
 app.use('/api/v1/socket', socket);
+app.use('/api/v1/channel', channel);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 5000;

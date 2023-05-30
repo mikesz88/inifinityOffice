@@ -1,4 +1,4 @@
-import { Business, User } from '@prisma/client';
+import { Business, Room, User } from '@prisma/client';
 import { saltValue } from '../src/utils/auth';
 import db from './db.setup';
 
@@ -697,9 +697,39 @@ const seed = async () => {
     });
   }
 
-  createRoomsList(business1, 'Office_Park', business1Users);
-  createRoomsList(business2, 'Downtown_Office', business2Users);
-  createRoomsList(business3, 'Skyline', business3Users);
+  await createRoomsList(business1, 'Office_Park', business1Users);
+  await createRoomsList(business2, 'Downtown_Office', business2Users);
+  await createRoomsList(business3, 'Skyline', business3Users);
+
+  const room1 = await db.room.findMany({
+    where: {
+      userId: lily1.id,
+    },
+  });
+
+  await db.message.create({
+    data: {
+      messageBody: 'This is a test',
+      userId: michael1.id,
+      businessId: business1.id,
+      roomId: room1[0].id,
+    },
+  });
+
+  const room12 = await db.room.findMany({
+    where: {
+      userId: lily1.id,
+    },
+  });
+
+  await db.message.create({
+    data: {
+      messageBody: 'This is a test by lily',
+      userId: lily1.id,
+      businessId: business1.id,
+      roomId: room12[0].id,
+    },
+  });
 };
 
 seed()
