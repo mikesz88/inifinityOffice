@@ -6,6 +6,41 @@ import { Business } from '@prisma/client';
 // * @desc Create a Business
 // * @route POST /api/v1/business
 // * @access PUBLIC
+/**
+ * @swagger
+ * /api/v1/business:
+ *   post:
+ *     summary: Create a Business
+ *     description: Endpoint to create a new business.
+ *     tags:
+ *       - Business
+ *     requestBody:
+ *       description: Business data
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateBusinessRequest'
+ *           example:
+ *             name: Example Business
+ *             officeType: Skyline
+ *     responses:
+ *       201:
+ *         description: Business created successfully
+ * components:
+ *   schemas:
+ *     CreateBusinessRequest:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *         officeType:
+ *           type: string
+ *       required:
+ *         - name
+ *         - officeType
+ */
+
 exports.createBusiness = asyncHandler(
   async (req: Request, res: Response, _next: NextFunction) => {
     const { name, officeType } = req.body;

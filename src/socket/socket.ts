@@ -29,19 +29,24 @@ io.on('connection', function (client) {
   console.log(`User Connected: ${client.id}`);
 
   // Triggered when a peer hits the join room button.
-  client.on('join', (roomName) => {
+  client.on('join', async (roomId) => {
     const { rooms } = socketApi.io.sockets.adapter;
-    const room = rooms.get(roomName);
-    console.log({ roomName });
+    const room = rooms.get(roomId);
+    console.log({ roomId });
+
+    const roomSize = await db.room.findUnique({
+      where: { id: roomId },
+      select: { capacity: true },
+    });
 
     // room == undefined when no such room exists.
     if (room === undefined) {
-      client.join(roomName);
+      client.join(roomId);
       client.emit('created');
       console.log('created');
-    } else if (room.size === 1) {
+    } else if (room.size < roomSize!.capacity) {
       // room.size == 1 when one person is inside the room.
-      client.join(roomName);
+      client.join(roomId);
       client.emit('joined');
       console.log('joined');
     } else {
@@ -52,32 +57,32 @@ io.on('connection', function (client) {
   });
 
   // Triggered when the person who joined the room is ready to communicate.
-  client.on('ready', (roomName) => {
-    console.log({ roomName });
-    client.broadcast.to(roomName).emit('ready'); // Informs the other peer in the room.
+  client.on('ready', (roomId) => {
+    console.log({ roomId });
+    client.broadcast.to(roomId).emit('ready'); // Informs the other peer in the room.
   });
 
   // Triggered when server gets an icecandidate from a peer in the room.
-  client.on('iceCandidate', (candidate, roomName) => {
+  client.on('iceCandidate', (candidate, roomId) => {
     console.log({ candidate });
-    client.broadcast.to(roomName).emit('iceCandidate', candidate); // Sends Candidate to the other peer in the room.
+    client.broadcast.to(roomId).emit('iceCandidate', candidate); // Sends Candidate to the other peer in the room.
   });
 
   // Triggered when server gets an offer from a peer in the room.
-  client.on('offer', (offer, roomName) => {
+  client.on('offer', (offer, roomId) => {
     console.log({ offer });
-    client.broadcast.to(roomName).emit('offer', offer); // Sends Offer to the other peer in the room.
+    client.broadcast.to(roomId).emit('offer', offer); // Sends Offer to the other peer in the room.
   });
 
   // Triggered when server gets an answer from a peer in the room
-  client.on('answer', (answer, roomName) => {
+  client.on('answer', (answer, roomId) => {
     console.log({ answer });
-    client.broadcast.to(roomName).emit('answer', answer); // Sends Answer to the other peer in the room.
+    client.broadcast.to(roomId).emit('answer', answer); // Sends Answer to the other peer in the room.
   });
 
-  client.on('leave', (roomName) => {
-    client.leave(roomName);
-    client.broadcast.to(roomName).emit('leave');
+  client.on('leave', (roomId) => {
+    client.leave(roomId);
+    client.broadcast.to(roomId).emit('leave');
   });
 
   client.on('chatMessage', async (messageBody, roomId, userId, businessId) => {
@@ -90,7 +95,7 @@ io.on('connection', function (client) {
         businessId,
       },
     });
-    // const roomName = Array.from(client.rooms);
+    // const roomId = Array.from(client.rooms);
     console.log({ newMessage });
 
     io.to(roomId).emit('chatMessage', messageBody, roomId, userId, businessId);
